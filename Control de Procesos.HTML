@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Procesos de Compra</title>
+    <!-- Incluye Tailwind CSS para un estilo moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para la aplicación */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        /* Oculta las flechas de los campos de número en los navegadores */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Contenedor principal de la aplicación -->
+    <div class="max-w-7xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8">
+
+        <!-- Título de la aplicación y ID del usuario -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-2">
+            Control de Procesos de Compra
+        </h1>
+        <p id="userIdDisplay" class="text-center text-sm text-gray-500 mb-6 hidden">
+            Tu ID de usuario: <span id="userId">Cargando...</span>
+        </p>
+        
+        <!-- Mensaje de estado -->
+        <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white font-semibold text-center transition-all duration-300"></div>
+        <div id="loadingMessage" class="flex justify-center items-center gap-2 mb-4 p-3 rounded-lg bg-blue-100 text-blue-800 font-semibold transition-all duration-300">
+            Cargando datos...
+        </div>
+
+        <!-- Formulario para agregar una nueva compra -->
+        <form id="purchaseForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+            <input type="hidden" id="purchaseId">
+            <input type="text" id="itemName" placeholder="Nombre de la Solicitud" required
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="number" id="amount" placeholder="Monto Asignado ($)" step="0.01" required
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="text" id="ocNumber" placeholder="Número de OC"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="text" id="vendor" placeholder="Proveedor"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="publicationDate" required
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="closingDate" required
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="sentDate"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="acceptanceDate"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="deliveryDate"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="date" id="receptionDate"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="text" id="paymentStatus" placeholder="Estado de Pago"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="text" id="notes" placeholder="Notas"
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <button type="submit" id="submitBtn"
+                class="lg:col-span-1 md:col-span-2 col-span-1 p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                Agregar Solicitud
+            </button>
+        </form>
+
+        <!-- Filtros de estado y botón de reporte -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div class="flex flex-wrap gap-2">
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-blue-600 text-white" data-filter="all">Todas</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="in_progress">En Proceso</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="pending_payment">Pendiente de Pago</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="completed">Completado</button>
+            </div>
+            <button id="generateReportBtn" class="px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300">
+                Generar Reporte de Atrasos (CSV)
+            </button>
+        </div>
+
+        <!-- Tabla de compras -->
+        <div class="overflow-x-auto shadow-sm rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitud</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Cierre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">OC</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Envío OC</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Aceptación</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Entrega</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Recepción</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Días Atraso</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado de Pago</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Acciones</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="purchaseList" class="bg-white divide-y divide-gray-200">
+                    <!-- Las compras se renderizarán aquí -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Importa las funciones necesarias de Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            onSnapshot, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Obtiene las referencias a los elementos del DOM
+        const purchaseForm = document.getElementById('purchaseForm');
+        const purchaseIdInput = document.getElementById('purchaseId');
+        const itemNameInput = document.getElementById('itemName');
+        const amountInput = document.getElementById('amount');
+        const ocNumberInput = document.getElementById('ocNumber');
+        const vendorInput = document.getElementById('vendor');
+        const publicationDateInput = document.getElementById('publicationDate');
+        const closingDateInput = document.getElementById('closingDate');
+        const sentDateInput = document.getElementById('sentDate');
+        const acceptanceDateInput = document.getElementById('acceptanceDate');
+        const deliveryDateInput = document.getElementById('deliveryDate');
+        const receptionDateInput = document.getElementById('receptionDate');
+        const paymentStatusInput = document.getElementById('paymentStatus');
+        const notesInput = document.getElementById('notes');
+        const submitBtn = document.getElementById('submitBtn');
+        const purchaseList = document.getElementById('purchaseList');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const statusMessage = document.getElementById('statusMessage');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const userIdDisplay = document.getElementById('userId');
+        const userIdContainer = document.getElementById('userIdDisplay');
+
+        // Variables globales para Firebase y la aplicación
+        let db;
+        let auth;
+        let purchases = [];
+        let currentFilter = 'all';
+
+        // --- Configuración e Inicialización de Firebase ---
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Autentica al usuario en el entorno
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // El usuario está autenticado, ahora podemos usar Firestore
+                userIdDisplay.textContent = user.uid;
+                userIdContainer.classList.remove('hidden');
+                console.log("Usuario autenticado:", user.uid);
+                
+                // Muestra el mensaje de carga mientras se obtienen los datos
+                loadingMessage.classList.remove('hidden');
+
+                // Escucha los cambios en la colección 'purchases' en tiempo real
+                // La ruta de la colección se define para permitir el acceso compartido
+                const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
+                onSnapshot(purchaseCollection, (snapshot) => {
+                    purchases = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderPurchases();
+                    loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga una vez que los datos están disponibles
+                });
+
+            } else {
+                // Si no hay un token, se autentica de forma anónima
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error al autenticar:", error);
+                    showStatusMessage('Error de autenticación.', 'error');
+                    loadingMessage.classList.add('hidden');
+                }
+            }
+        });
+
+
+        // --- Funciones para manejar las compras ---
+
+        /**
+         * Renderiza la tabla de compras en la interfaz de usuario.
+         * Filtra las compras según el estado actual antes de renderizar.
+         */
+        const renderPurchases = () => {
+            purchaseList.innerHTML = ''; // Limpia la lista actual
+            const filteredPurchases = purchases.filter(purchase => {
+                if (currentFilter === 'all') return true;
+                return purchase.status === currentFilter;
+            });
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            filteredPurchases.forEach((purchase) => {
+                // Determina la clase CSS y el texto según el estado
+                let statusClass = 'bg-blue-100 text-blue-800';
+                let statusText = 'En Proceso';
+                if (purchase.status === 'in_progress') {
+                    statusClass = 'bg-blue-100 text-blue-800';
+                    statusText = 'En Proceso';
+                } else if (purchase.status === 'pending_payment') {
+                    statusClass = 'bg-yellow-100 text-yellow-800';
+                    statusText = 'Pendiente de Pago';
+                } else if (purchase.status === 'completed') {
+                    statusClass = 'bg-green-100 text-green-800';
+                    statusText = 'Completado';
+                }
+
+                // Calcula los días de atraso
+                let delayDays = 0;
+                let delayClass = '';
+                if (purchase.receptionDate && purchase.deliveryDate) {
+                    const reception = new Date(purchase.receptionDate);
+                    const delivery = new Date(purchase.deliveryDate);
+                    if (reception > delivery) {
+                        const timeDiff = reception.getTime() - delivery.getTime();
+                        delayDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                        delayClass = 'text-red-500 font-bold';
+                    }
+                }
+
+                // Crea una nueva fila para la tabla
+                const row = document.createElement('tr');
+                let closingDateClass = '';
+                const closingDate = new Date(purchase.closingDate);
+                closingDate.setHours(0, 0, 0, 0);
+
+                if (closingDate < today && purchase.status !== 'completed') {
+                    closingDateClass = 'text-red-500 font-bold';
+                }
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${purchase.itemName || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${purchase.amount ? purchase.amount.toFixed(2) : '0.00'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${closingDateClass}">${purchase.closingDate || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.ocNumber || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.vendor || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.sentDate || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.acceptanceDate || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.deliveryDate || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.receptionDate || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${delayClass}">${delayDays > 0 ? delayDays : '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.paymentStatus || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.notes || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <select class="status-select p-2 border border-gray-300 rounded-lg" data-id="${purchase.id}">
+                            <option value="in_progress" ${purchase.status === 'in_progress' ? 'selected' : ''}>En Proceso</option>
+                            <option value="pending_payment" ${purchase.status === 'pending_payment' ? 'selected' : ''}>Pendiente de Pago</option>
+                            <option value="completed" ${purchase.status === 'completed' ? 'selected' : ''}>Completado</option>
+                        </select>
+                        <button class="edit-btn text-blue-600 hover:text-blue-900 ml-4" data-id="${purchase.id}">
+                            Editar
+                        </button>
+                        <button class="delete-btn text-red-600 hover:text-red-900 ml-4" data-id="${purchase.id}">
+                            Eliminar
+                        </button>
+                    </td>
+                `;
+
+                purchaseList.appendChild(row);
+            });
+        };
+
+        /**
+         * Muestra un mensaje de estado en la parte superior del formulario.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {string} type - El tipo de mensaje ('success', 'info', 'error').
+         */
+        const showStatusMessage = (message, type) => {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('hidden', 'bg-green-600', 'bg-blue-600', 'bg-red-600');
+            if (type === 'success') {
+                statusMessage.classList.add('bg-green-600');
+            } else if (type === 'info') {
+                statusMessage.classList.add('bg-blue-600');
+            } else if (type === 'error') {
+                statusMessage.classList.add('bg-red-600');
+            }
+            // Oculta el mensaje después de 5 segundos
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        };
+
+        /**
+         * Maneja el envío del formulario para agregar o actualizar una compra en Firestore.
+         */
+        purchaseForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evita que la página se recargue
+
+            // Obtiene los valores del formulario
+            const id = purchaseIdInput.value;
+            const itemName = itemNameInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            const ocNumber = ocNumberInput.value.trim();
+            const vendor = vendorInput.value.trim();
+            const publicationDate = publicationDateInput.value;
+            const closingDate = closingDateInput.value;
+            const sentDate = sentDateInput.value;
+            const acceptanceDate = acceptanceDateInput.value;
+            const deliveryDate = deliveryDateInput.value;
+            const receptionDate = receptionDateInput.value;
+            const paymentStatus = paymentStatusInput.value.trim();
+            const notes = notesInput.value.trim();
+
+            // Valida que los campos requeridos no estén vacíos
+            if (!itemName || isNaN(amount) || !publicationDate || !closingDate) {
+                showStatusMessage('Por favor, completa todos los campos requeridos.', 'error');
+                return;
+            }
+
+            // Objeto de datos a guardar en Firestore
+            const purchaseData = {
+                itemName,
+                amount,
+                ocNumber,
+                vendor,
+                publicationDate,
+                closingDate,
+                sentDate,
+                acceptanceDate,
+                deliveryDate,
+                receptionDate,
+                paymentStatus,
+                notes,
+                status: 'in_progress', // Estado inicial
+                createdAt: Date.now() // Marca de tiempo de creación
+            };
+            
+            try {
+                const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
+                if (id) {
+                    // Actualiza una compra existente
+                    const purchaseDocRef = doc(db, `artifacts/${appId}/public/data/purchases`, id);
+                    await updateDoc(purchaseDocRef, purchaseData);
+                    showStatusMessage('Solicitud actualizada correctamente.', 'success');
+                    submitBtn.textContent = 'Agregar Solicitud'; // Vuelve a modo de adición
+                    purchaseIdInput.value = '';
+                } else {
+                    // Crea una nueva compra
+                    await addDoc(purchaseCollection, purchaseData);
+                    showStatusMessage('Solicitud agregada correctamente.', 'success');
+                }
+            } catch (e) {
+                console.error("Error al guardar en Firestore: ", e);
+                showStatusMessage('Error al guardar la solicitud. Inténtalo de nuevo.', 'error');
+            }
+            
+            // Limpia el formulario
+            purchaseForm.reset();
+        });
+
+        /**
+         * Maneja los clics en los botones de filtro.
+         */
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Actualiza el filtro actual
+                currentFilter = button.dataset.filter;
+
+                // Actualiza las clases de los botones para reflejar el filtro activo
+                filterButtons.forEach(btn => {
+                    if (btn.dataset.filter === currentFilter) {
+                        btn.classList.add('bg-blue-600', 'text-white');
+                        btn.classList.remove('bg-gray-200', 'text-gray-800');
+                    } else {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-800');
+                    }
+                });
+
+                // Renderiza la tabla con el nuevo filtro
+                renderPurchases();
+            });
+        });
+
+        /**
+         * Maneja los clics en los botones de la tabla y los cambios en el select.
+         * Usa delegación de eventos.
+         */
+        purchaseList.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const purchaseId = e.target.dataset.id;
+                const purchaseToEdit = purchases.find(p => p.id === purchaseId);
+                if (purchaseToEdit) {
+                    // Carga los datos de la compra en el formulario para editar
+                    purchaseIdInput.value = purchaseToEdit.id;
+                    itemNameInput.value = purchaseToEdit.itemName || '';
+                    amountInput.value = purchaseToEdit.amount || '';
+                    ocNumberInput.value = purchaseToEdit.ocNumber || '';
+                    vendorInput.value = purchaseToEdit.vendor || '';
+                    publicationDateInput.value = purchaseToEdit.publicationDate || '';
+                    closingDateInput.value = purchaseToEdit.closingDate || '';
+                    sentDateInput.value = purchaseToEdit.sentDate || '';
+                    acceptanceDateInput.value = purchaseToEdit.acceptanceDate || '';
+                    deliveryDateInput.value = purchaseToEdit.deliveryDate || '';
+                    receptionDateInput.value = purchaseToEdit.receptionDate || '';
+                    paymentStatusInput.value = purchaseToEdit.paymentStatus || '';
+                    notesInput.value = purchaseToEdit.notes || '';
+                    
+                    // Cambia el texto del botón para indicar que es una actualización
+                    submitBtn.textContent = 'Actualizar Solicitud';
+                    showStatusMessage(`Ahora estás editando la solicitud: ${purchaseToEdit.itemName}.`, 'info');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            } else if (e.target.classList.contains('delete-btn')) {
+                const purchaseId = e.target.dataset.id;
+                try {
+                    // Elimina el documento de Firestore
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId));
+                    showStatusMessage('Solicitud eliminada correctamente.', 'success');
+                } catch (e) {
+                    console.error("Error al eliminar el documento: ", e);
+                    showStatusMessage('Error al eliminar la solicitud. Inténtalo de nuevo.', 'error');
+                }
+            }
+        });
+
+        purchaseList.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('status-select')) {
+                const purchaseId = e.target.dataset.id;
+                const newStatus = e.target.value;
+
+                try {
+                    // Actualiza el estado en Firestore
+                    const purchaseDocRef = doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId);
+                    await updateDoc(purchaseDocRef, { status: newStatus });
+                } catch (e) {
+                    console.error("Error al actualizar el estado: ", e);
+                    showStatusMessage('Error al actualizar el estado. Inténtalo de nuevo.', 'error');
+                }
+            }
+        });
+
+        /**
+         * Genera y descarga un archivo CSV con las solicitudes atrasadas.
+         */
+        generateReportBtn.addEventListener('click', () => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Filtra las compras con atrasos
+            const delayedPurchases = purchases.filter(purchase => {
+                const deliveryDate = new Date(purchase.deliveryDate);
+                const receptionDate = new Date(purchase.receptionDate);
+                // Si hay fecha de entrega y recepción, y la recepción es posterior a la entrega
+                return purchase.deliveryDate && purchase.receptionDate && receptionDate > deliveryDate;
+            });
+
+            if (delayedPurchases.length === 0) {
+                showStatusMessage('No hay solicitudes con atrasos para generar el reporte.', 'info');
+                return;
+            }
+
+            // Define el encabezado del archivo CSV
+            const headers = [
+                "Solicitud",
+                "Monto",
+                "Fecha de Cierre",
+                "Numero de OC",
+                "Proveedor",
+                "Fecha Envio OC",
+                "Fecha Aceptacion",
+                "Fecha Entrega",
+                "Fecha Recepcion",
+                "Dias de Atraso",
+                "Estado de Pago",
+                "Notas"
+            ];
+
+            // Mapea los datos de las compras a un formato de filas CSV
+            const csvRows = delayedPurchases.map(purchase => {
+                const deliveryDate = new Date(purchase.deliveryDate);
+                const receptionDate = new Date(purchase.receptionDate);
+                const timeDiff = receptionDate.getTime() - deliveryDate.getTime();
+                const delayDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                return [
+                    `"${purchase.itemName.replace(/"/g, '""')}"`,
+                    purchase.amount,
+                    purchase.closingDate,
+                    `"${purchase.ocNumber.replace(/"/g, '""')}"`,
+                    `"${purchase.vendor.replace(/"/g, '""')}"`,
+                    purchase.sentDate,
+                    purchase.acceptanceDate,
+                    purchase.deliveryDate,
+                    purchase.receptionDate,
+                    delayDays,
+                    `"${purchase.paymentStatus.replace(/"/g, '""')}"`,
+                    `"${purchase.notes.replace(/"/g, '""')}"`
+                ].join(',');
+            });
+
+            // Une el encabezado y las filas en una sola cadena CSV
+            const csvContent = [headers.join(','), ...csvRows].join('\n');
+
+            // Crea un Blob (objeto de archivo) a partir de la cadena CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            // Crea un enlace temporal y simula un clic para descargar el archivo
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'reporte_atrasos.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showStatusMessage('Reporte de atrasos generado y descargado.', 'success');
+        });
+    </script>
+</body>
+</html>
