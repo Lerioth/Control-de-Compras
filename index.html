@@ -170,6 +170,7 @@
          * @param {string} message - El mensaje a mostrar.
          * @param {string} type - El tipo de mensaje ('success', 'info', 'error').
          */
+        // REGLA: Mover las declaraciones de funciones antes de cualquier uso.
         const showStatusMessage = (message, type) => {
             statusMessage.textContent = message;
             statusMessage.classList.remove('hidden', 'bg-green-600', 'bg-blue-600', 'bg-red-600');
@@ -189,6 +190,7 @@
         /**
          * Habilita los elementos de la interfaz de usuario una vez que Firebase está listo.
          */
+        // REGLA: Mover las declaraciones de funciones antes de cualquier uso.
         const enableUI = () => {
             const formInputs = purchaseForm.querySelectorAll('input, button');
             formInputs.forEach(input => {
@@ -204,13 +206,15 @@
         // --- Configuración e Inicialización de Firebase ---
         console.log("1. Inicializando Firebase...");
         try {
+            // Verificar si la configuración de Firebase está disponible y es válida
             const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Error: firebaseConfig está vacía. No se pudo inicializar Firebase.");
-                showStatusMessage('Error al iniciar la aplicación. Configuración de Firebase faltante.', 'error');
+            if (!firebaseConfig.projectId) {
+                console.error("Error: 'projectId' no se encontró en la configuración de Firebase.");
+                showStatusMessage('Error al iniciar la aplicación. Configuración de Firebase faltante o incompleta.', 'error');
                 loadingMessage.classList.add('hidden');
-                throw new Error("firebaseConfig is empty");
+                throw new Error("'projectId' not provided in firebase.initializeApp.");
             }
+            
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
