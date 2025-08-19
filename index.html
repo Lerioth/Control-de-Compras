@@ -324,11 +324,9 @@
                 statusMessage.classList.add('hidden');
             }, 5000);
         };
-
-        /**
-         * Maneja el envío del formulario para agregar o actualizar una compra en Firestore.
-         */
-        purchaseForm.addEventListener('submit', async (e) => {
+        
+        // Función para manejar el envío del formulario de manera asíncrona
+        async function handleFormSubmit(e) {
             e.preventDefault(); // Evita que la página se recargue
 
             // Obtiene los valores del formulario
@@ -391,7 +389,12 @@
             
             // Limpia el formulario
             purchaseForm.reset();
-        });
+        }
+
+        /**
+         * Maneja el envío del formulario para agregar o actualizar una compra en Firestore.
+         */
+        purchaseForm.addEventListener('submit', handleFormSubmit);
 
         /**
          * Maneja los clics en los botones de filtro.
