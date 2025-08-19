@@ -164,6 +164,42 @@
         let purchases = [];
         let currentFilter = 'all';
         let isAuthReady = false; // Nueva variable de estado
+        
+        /**
+         * Muestra un mensaje de estado en la parte superior del formulario.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {string} type - El tipo de mensaje ('success', 'info', 'error').
+         */
+        const showStatusMessage = (message, type) => {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('hidden', 'bg-green-600', 'bg-blue-600', 'bg-red-600');
+            if (type === 'success') {
+                statusMessage.classList.add('bg-green-600');
+            } else if (type === 'info') {
+                statusMessage.classList.add('bg-blue-600');
+            } else if (type === 'error') {
+                statusMessage.classList.add('bg-red-600');
+            }
+            // Oculta el mensaje después de 5 segundos
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        };
+        
+        /**
+         * Habilita los elementos de la interfaz de usuario una vez que Firebase está listo.
+         */
+        const enableUI = () => {
+            const formInputs = purchaseForm.querySelectorAll('input, button');
+            formInputs.forEach(input => {
+                input.disabled = false;
+            });
+            submitBtn.classList.remove('bg-blue-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'transform', 'hover:scale-105');
+            
+            filterButtons.forEach(btn => btn.disabled = false);
+            generateReportBtn.disabled = false;
+        };
 
         // --- Configuración e Inicialización de Firebase ---
         console.log("1. Inicializando Firebase...");
@@ -239,21 +275,6 @@
                 }
             }
         });
-
-        /**
-         * Habilita los elementos de la interfaz de usuario una vez que Firebase está listo.
-         */
-        const enableUI = () => {
-            const formInputs = purchaseForm.querySelectorAll('input, button');
-            formInputs.forEach(input => {
-                input.disabled = false;
-            });
-            submitBtn.classList.remove('bg-blue-400', 'cursor-not-allowed');
-            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'transform', 'hover:scale-105');
-            
-            filterButtons.forEach(btn => btn.disabled = false);
-            generateReportBtn.disabled = false;
-        };
 
 
         // --- Funciones para manejar las compras ---
@@ -346,28 +367,8 @@
                 purchaseList.appendChild(row);
             });
         };
-
-        /**
-         * Muestra un mensaje de estado en la parte superior del formulario.
-         * @param {string} message - El mensaje a mostrar.
-         * @param {string} type - El tipo de mensaje ('success', 'info', 'error').
-         */
-        const showStatusMessage = (message, type) => {
-            statusMessage.textContent = message;
-            statusMessage.classList.remove('hidden', 'bg-green-600', 'bg-blue-600', 'bg-red-600');
-            if (type === 'success') {
-                statusMessage.classList.add('bg-green-600');
-            } else if (type === 'info') {
-                statusMessage.classList.add('bg-blue-600');
-            } else if (type === 'error') {
-                statusMessage.classList.add('bg-red-600');
-            }
-            // Oculta el mensaje después de 5 segundos
-            setTimeout(() => {
-                statusMessage.classList.add('hidden');
-            }, 5000);
-        };
         
+
         /**
          * Maneja el envío del formulario de manera asíncrona
          */
