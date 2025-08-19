@@ -60,13 +60,15 @@
         <!-- Formulario para agregar una nueva compra -->
         <form id="purchaseForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
             <input type="hidden" id="purchaseId">
-            <input type="text" id="itemName" placeholder="Nombre de la Solicitud" required
+            <input type="text" id="itemName" placeholder="Ej: Solicitud de Software" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
             <input type="number" id="amount" placeholder="Monto Asignado ($)" step="0.01" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="ocNumber" placeholder="Número de OC"
+            <input type="number" id="ocNumber" placeholder="Número de OC"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="vendor" placeholder="Proveedor"
+            <input type="text" id="vendor" placeholder="Ej: Microsoft, S.A."
+                class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+            <input type="number" id="awardedAmount" placeholder="Monto Adjudicado ($)" step="0.01"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
             <input type="date" id="publicationDate" placeholder="Fecha de Publicación" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
@@ -80,9 +82,9 @@
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
             <input type="date" id="receptionDate" placeholder="Fecha de Recepción Real"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="paymentStatus" placeholder="Estado de Pago"
+            <input type="text" id="paymentStatus" placeholder="Ej: Pagado, Pendiente"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="notes" placeholder="Notas"
+            <input type="text" id="notes" placeholder="Notas adicionales"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
             <button type="submit" id="submitBtn"
                 class="lg:col-span-1 md:col-span-2 col-span-1 p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300 transform hover:scale-105">
@@ -109,10 +111,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitud</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Cierre</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">OC</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto Asignado</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número OC</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto Adjudicado</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Cierre</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Envío OC</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Aceptación</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Entrega</th>
@@ -187,6 +190,7 @@
         const amountInput = document.getElementById('amount');
         const ocNumberInput = document.getElementById('ocNumber');
         const vendorInput = document.getElementById('vendor');
+        const awardedAmountInput = document.getElementById('awardedAmount'); // Nuevo campo
         const publicationDateInput = document.getElementById('publicationDate');
         const closingDateInput = document.getElementById('closingDate');
         const sentDateInput = document.getElementById('sentDate');
@@ -322,9 +326,10 @@
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${purchase.itemName || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${purchase.amount ? purchase.amount.toFixed(2) : '0.00'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${closingDateClass}">${purchase.closingDate || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.ocNumber || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.vendor || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${purchase.awardedAmount ? purchase.awardedAmount.toFixed(2) : '0.00'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${closingDateClass}">${purchase.closingDate || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.sentDate || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.acceptanceDate || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${purchase.deliveryDate || ''}</td>
@@ -419,6 +424,7 @@
             const amount = parseFloat(amountInput.value);
             const ocNumber = ocNumberInput.value.trim();
             const vendor = vendorInput.value.trim();
+            const awardedAmount = awardedAmountInput.value ? parseFloat(awardedAmountInput.value) : null;
             const publicationDate = publicationDateInput.value;
             const closingDate = closingDateInput.value;
             const sentDate = sentDateInput.value;
@@ -438,6 +444,7 @@
                 amount,
                 ocNumber,
                 vendor,
+                awardedAmount,
                 publicationDate,
                 closingDate,
                 sentDate,
@@ -510,6 +517,7 @@
                     amountInput.value = purchaseToEdit.amount || '';
                     ocNumberInput.value = purchaseToEdit.ocNumber || '';
                     vendorInput.value = purchaseToEdit.vendor || '';
+                    awardedAmountInput.value = purchaseToEdit.awardedAmount || '';
                     publicationDateInput.value = purchaseToEdit.publicationDate || '';
                     closingDateInput.value = purchaseToEdit.closingDate || '';
                     sentDateInput.value = purchaseToEdit.sentDate || '';
@@ -571,8 +579,8 @@
             }
 
             const headers = [
-                "Solicitud", "Monto", "Fecha de Cierre", "Numero de OC", "Proveedor",
-                "Fecha Envio OC", "Fecha Aceptacion", "Fecha Entrega", "Fecha Recepcion",
+                "Solicitud", "Monto Asignado", "Numero de OC", "Proveedor", "Monto Adjudicado",
+                "Fecha de Cierre", "Fecha Envio OC", "Fecha Aceptacion", "Fecha Entrega", "Fecha Recepcion",
                 "Dias de Atraso", "Estado de Pago", "Notas"
             ];
             const csvRows = delayedPurchases.map(purchase => {
@@ -583,9 +591,10 @@
                 return [
                     `"${(purchase.itemName || '').replace(/"/g, '""')}"`,
                     purchase.amount || '',
-                    purchase.closingDate || '',
                     `"${(purchase.ocNumber || '').replace(/"/g, '""')}"`,
                     `"${(purchase.vendor || '').replace(/"/g, '""')}"`,
+                    purchase.awardedAmount || '',
+                    purchase.closingDate || '',
                     purchase.sentDate || '',
                     purchase.acceptanceDate || '',
                     purchase.deliveryDate || '',
