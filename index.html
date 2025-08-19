@@ -166,12 +166,14 @@
         let isAuthReady = false; // Nueva variable de estado
 
         // --- Configuración e Inicialización de Firebase ---
+        console.log("1. Inicializando Firebase...");
         try {
             const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
             appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            console.log("2. Firebase inicializado con éxito.");
         } catch (e) {
             console.error("Error al inicializar Firebase:", e);
             showStatusMessage('Error al iniciar la aplicación. Revisa la consola.', 'error');
@@ -180,21 +182,23 @@
 
         // Autentica al usuario en el entorno
         onAuthStateChanged(auth, async (user) => {
+            console.log("3. Estado de autenticación cambiado. Usuario actual:", user ? user.uid : "null");
             if (user) {
                 // El usuario está autenticado, ahora podemos usar Firestore y habilitar la UI
                 isAuthReady = true;
                 userIdDisplay.textContent = user.uid;
                 userIdContainer.classList.remove('hidden');
-                console.log("Usuario autenticado:", user.uid);
+                console.log("4. Usuario autenticado con éxito. Habilitando la interfaz de usuario...");
                 
                 // Habilita todos los campos del formulario y botones
                 enableUI();
 
                 // Escucha los cambios en la colección 'purchases' en tiempo real
                 try {
+                    console.log("5. Configurandando listener de Firestore en la ruta:", `artifacts/${appId}/public/data/purchases`);
                     const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
                     onSnapshot(purchaseCollection, (snapshot) => {
-                        console.log("Datos de Firestore recibidos.");
+                        console.log("6. Datos de Firestore recibidos.");
                         purchases = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
@@ -215,14 +219,16 @@
             } else {
                 // Si no hay un token, se autentica de forma anónima
                 try {
-                    console.log("Iniciando autenticación...");
+                    console.log("7. No hay usuario. Intentando autenticación...");
                     if (typeof __initial_auth_token !== 'undefined') {
+                        console.log("8. Autenticando con token personalizado...");
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
+                        console.log("8. Autenticando de forma anónima...");
                         await signInAnonymously(auth);
                     }
                 } catch (error) {
-                    console.error("Error al autenticar:", error);
+                    console.error("9. Error al autenticar:", error);
                     showStatusMessage('Error de autenticación.', 'error');
                     loadingMessage.classList.add('hidden');
                 }
@@ -409,6 +415,7 @@
             };
             
             try {
+                console.log("10. Guardando datos en Firestore...");
                 const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
                 if (id) {
                     // Actualiza una compra existente
@@ -423,7 +430,7 @@
                     showStatusMessage('Solicitud agregada correctamente.', 'success');
                 }
             } catch (e) {
-                console.error("Error al guardar en Firestore: ", e);
+                console.error("11. Error al guardar en Firestore: ", e);
                 showStatusMessage('Error al guardar la solicitud. Inténtalo de nuevo.', 'error');
             }
             
@@ -494,11 +501,12 @@
             } else if (e.target.classList.contains('delete-btn')) {
                 const purchaseId = e.target.dataset.id;
                 try {
+                    console.log("12. Eliminando documento con ID:", purchaseId);
                     // Elimina el documento de Firestore
                     await deleteDoc(doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId));
                     showStatusMessage('Solicitud eliminada correctamente.', 'success');
                 } catch (e) {
-                    console.error("Error al eliminar el documento: ", e);
+                    console.error("13. Error al eliminar el documento: ", e);
                     showStatusMessage('Error al eliminar la solicitud. Inténtalo de nuevo.', 'error');
                 }
             }
@@ -511,11 +519,12 @@
                 const newStatus = e.target.value;
 
                 try {
+                    console.log(`14. Actualizando estado del documento ${purchaseId} a: ${newStatus}`);
                     // Actualiza el estado en Firestore
                     const purchaseDocRef = doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId);
                     await updateDoc(purchaseDocRef, { status: newStatus });
                 } catch (e) {
-                    console.error("Error al actualizar el estado: ", e);
+                    console.error("15. Error al actualizar el estado: ", e);
                     showStatusMessage('Error al actualizar el estado. Inténtalo de nuevo.', 'error');
                 }
             }
