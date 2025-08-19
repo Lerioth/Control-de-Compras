@@ -40,7 +40,7 @@
         <!-- Mensaje de estado -->
         <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white font-semibold text-center transition-all duration-300"></div>
         <div id="loadingMessage" class="flex justify-center items-center gap-2 mb-4 p-3 rounded-lg bg-blue-100 text-blue-800 font-semibold transition-all duration-300">
-            Cargando datos...
+            Conectando con la base de datos...
         </div>
 
         <!-- Formulario para agregar una nueva compra -->
@@ -169,6 +169,12 @@
         console.log("1. Inicializando Firebase...");
         try {
             const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Error: firebaseConfig está vacía. No se pudo inicializar Firebase.");
+                showStatusMessage('Error al iniciar la aplicación. Configuración de Firebase faltante.', 'error');
+                loadingMessage.classList.add('hidden');
+                throw new Error("firebaseConfig is empty");
+            }
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
@@ -188,6 +194,8 @@
                 isAuthReady = true;
                 userIdDisplay.textContent = user.uid;
                 userIdContainer.classList.remove('hidden');
+                loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga cuando el usuario se autentica
+                showStatusMessage('Conexión exitosa a la base de datos.', 'success');
                 console.log("4. Usuario autenticado con éxito. Habilitando la interfaz de usuario...");
                 
                 // Habilita todos los campos del formulario y botones
@@ -204,16 +212,13 @@
                             ...doc.data()
                         }));
                         renderPurchases();
-                        loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga una vez que los datos están disponibles
                     }, (error) => {
                         console.error("Error al escuchar los cambios en Firestore:", error);
                         showStatusMessage('Error al cargar los datos. Revisa tu conexión.', 'error');
-                        loadingMessage.classList.add('hidden');
                     });
                 } catch (e) {
                     console.error("Error al configurar el listener de Firestore:", e);
                     showStatusMessage('Error al cargar los datos. Revisa la consola.', 'error');
-                    loadingMessage.classList.add('hidden');
                 }
 
             } else {
