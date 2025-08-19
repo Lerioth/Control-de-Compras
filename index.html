@@ -163,15 +163,23 @@
         // Variables globales para Firebase y la aplicación
         let db;
         let auth;
+        let appId; // Declaración de la variable appId en el ámbito global
         let purchases = [];
         let currentFilter = 'all';
 
         // --- Configuración e Inicialización de Firebase ---
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        try {
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            console.log("Firebase inicializado correctamente.");
+        } catch (e) {
+            console.error("Error al inicializar Firebase:", e);
+            showStatusMessage('Error al iniciar la aplicación. Revisa la consola.', 'error');
+            loadingMessage.classList.add('hidden');
+        }
 
         // Autentica al usuario en el entorno
         onAuthStateChanged(auth, async (user) => {
@@ -184,21 +192,32 @@
                 // Muestra el mensaje de carga mientras se obtienen los datos
                 loadingMessage.classList.remove('hidden');
 
-                // Escucha los cambios en la colección 'purchases' en tiempo real
-                // La ruta de la colección se define para permitir el acceso compartido
-                const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
-                onSnapshot(purchaseCollection, (snapshot) => {
-                    purchases = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    renderPurchases();
-                    loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga una vez que los datos están disponibles
-                });
+                try {
+                    // Escucha los cambios en la colección 'purchases' en tiempo real
+                    const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
+                    onSnapshot(purchaseCollection, (snapshot) => {
+                        console.log("Datos de Firestore recibidos.");
+                        purchases = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        renderPurchases();
+                        loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga una vez que los datos están disponibles
+                    }, (error) => {
+                        console.error("Error al escuchar los cambios en Firestore:", error);
+                        showStatusMessage('Error al cargar los datos. Revisa tu conexión.', 'error');
+                        loadingMessage.classList.add('hidden');
+                    });
+                } catch (e) {
+                    console.error("Error al configurar el listener de Firestore:", e);
+                    showStatusMessage('Error al cargar los datos. Revisa la consola.', 'error');
+                    loadingMessage.classList.add('hidden');
+                }
 
             } else {
                 // Si no hay un token, se autentica de forma anónima
                 try {
+                    console.log("Iniciando autenticación...");
                     if (typeof __initial_auth_token !== 'undefined') {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
