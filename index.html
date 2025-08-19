@@ -22,6 +22,17 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        /* Estilos para el modal personalizado */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8">
@@ -33,45 +44,48 @@
         <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-2">
             Control de Procesos de Compra
         </h1>
-        <p id="userIdDisplay" class="text-center text-sm text-gray-500 mb-6 hidden">
-            Tu ID de usuario: <span id="userId">Cargando...</span>
+        <p class="text-center text-sm text-gray-500 mb-6">
+            Datos compartidos con el equipo.
         </p>
+
+        <!-- Sección para mostrar el ID del usuario -->
+        <div class="mb-4 p-3 bg-gray-100 rounded-lg text-sm text-center">
+            <span class="font-semibold text-gray-700">ID de Usuario:</span>
+            <span id="userIdDisplay" class="text-gray-500 truncate">Cargando...</span>
+        </div>
 
         <!-- Mensaje de estado -->
         <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white font-semibold text-center transition-all duration-300"></div>
-        <div id="loadingMessage" class="flex justify-center items-center gap-2 mb-4 p-3 rounded-lg bg-blue-100 text-blue-800 font-semibold transition-all duration-300">
-            Conectando con la base de datos...
-        </div>
 
         <!-- Formulario para agregar una nueva compra -->
         <form id="purchaseForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
             <input type="hidden" id="purchaseId">
-            <input type="text" id="itemName" placeholder="Nombre de la Solicitud" required disabled
+            <input type="text" id="itemName" placeholder="Nombre de la Solicitud" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="number" id="amount" placeholder="Monto Asignado ($)" step="0.01" required disabled
+            <input type="number" id="amount" placeholder="Monto Asignado ($)" step="0.01" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="ocNumber" placeholder="Número de OC" disabled
+            <input type="text" id="ocNumber" placeholder="Número de OC"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="vendor" placeholder="Proveedor" disabled
+            <input type="text" id="vendor" placeholder="Proveedor"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="publicationDate" placeholder="Fecha de Publicación" required disabled
+            <input type="date" id="publicationDate" placeholder="Fecha de Publicación" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="closingDate" placeholder="Fecha de Cierre" required disabled
+            <input type="date" id="closingDate" placeholder="Fecha de Cierre" required
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="sentDate" placeholder="Fecha de Envío de OC" disabled
+            <input type="date" id="sentDate" placeholder="Fecha de Envío de OC"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="acceptanceDate" placeholder="Fecha de Aceptación" disabled
+            <input type="date" id="acceptanceDate" placeholder="Fecha de Aceptación"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="deliveryDate" placeholder="Fecha de Entrega (OC)" disabled
+            <input type="date" id="deliveryDate" placeholder="Fecha de Entrega (OC)"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="date" id="receptionDate" placeholder="Fecha de Recepción Real" disabled
+            <input type="date" id="receptionDate" placeholder="Fecha de Recepción Real"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="paymentStatus" placeholder="Estado de Pago" disabled
+            <input type="text" id="paymentStatus" placeholder="Estado de Pago"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <input type="text" id="notes" placeholder="Notas" disabled
+            <input type="text" id="notes" placeholder="Notas"
                 class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-            <button type="submit" id="submitBtn" disabled
-                class="lg:col-span-1 md:col-span-2 col-span-1 p-3 bg-blue-400 text-white rounded-lg font-semibold cursor-not-allowed">
+            <button type="submit" id="submitBtn"
+                class="lg:col-span-1 md:col-span-2 col-span-1 p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300 transform hover:scale-105">
                 Agregar Solicitud
             </button>
         </form>
@@ -79,12 +93,12 @@
         <!-- Filtros de estado y botón de reporte -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div class="flex flex-wrap gap-2">
-                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-blue-600 text-white" data-filter="all" disabled>Todas</button>
-                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="in_progress" disabled>En Proceso</button>
-                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="pending_payment" disabled>Pendiente de Pago</button>
-                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="completed" disabled>Completado</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-blue-600 text-white" data-filter="all">Todas</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="in_progress">En Proceso</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="pending_payment">Pendiente de Pago</button>
+                <button class="filter-btn px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" data-filter="completed">Completado</button>
             </div>
-            <button id="generateReportBtn" class="px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300" disabled>
+            <button id="generateReportBtn" class="px-4 py-2 text-sm rounded-full font-semibold transition-all duration-300 bg-gray-200 text-gray-800 hover:bg-gray-300">
                 Generar Reporte de Atrasos (CSV)
             </button>
         </div>
@@ -106,7 +120,6 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Días Atraso</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado de Pago</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                         <th scope="col" class="relative px-6 py-3">
                             <span class="sr-only">Acciones</span>
                         </th>
@@ -117,22 +130,56 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Modal para confirmar acciones -->
+        <div id="confirmModal" class="fixed inset-0 z-50 overflow-y-auto modal hidden">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-sm modal-content">
+                    <div class="text-center">
+                        <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900"></h3>
+                        <div class="mt-2">
+                            <p id="modalMessage" class="text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button id="confirmYesBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Sí</button>
+                        <button id="confirmNoBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400">No</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
-        // Importa las funciones necesarias de Firebase SDK
+        // Importa los módulos de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            onSnapshot, 
-            addDoc, 
-            doc, 
-            updateDoc, 
-            deleteDoc, 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // =========================================================================
+        // === PASO IMPORTANTE: CONFIGURACIÓN DE TU PROYECTO DE FIREBASE ===
+        // =========================================================================
+        // Por favor, pega aquí el objeto de configuración de tu propio proyecto de Firebase.
+        // Reemplaza los corchetes vacíos con tu configuración.
+        const YOUR_FIREBASE_CONFIG = {
+             apiKey: "AIzaSyDjeDouxBADygLjgcV3cUqMegd8VKIwYXM",
+             authDomain: "control-de-cga-2025.firebaseapp.com",
+             projectId: "control-de-cga-2025",
+             storageBucket: "control-de-cga-2025.firebasestorage.app",
+             messagingSenderId: "694903603143",
+             appId: "1:694903603143:web:79286b036a93154b88a3e2",
+             measurementId: "G-FMPF2HELKD"
+        };
+        
+        // Obtiene la ID de la aplicación, que es necesaria para la ruta de la base de datos.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Variables globales para Firebase
+        let db;
+        let auth;
+        let userId;
+        
         // Obtiene las referencias a los elementos del DOM
         const purchaseForm = document.getElementById('purchaseForm');
         const purchaseIdInput = document.getElementById('purchaseId');
@@ -153,24 +200,26 @@
         const filterButtons = document.querySelectorAll('.filter-btn');
         const generateReportBtn = document.getElementById('generateReportBtn');
         const statusMessage = document.getElementById('statusMessage');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const userIdDisplay = document.getElementById('userId');
-        const userIdContainer = document.getElementById('userIdDisplay');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const confirmModal = document.getElementById('confirmModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmYesBtn = document.getElementById('confirmYesBtn');
+        const confirmNoBtn = document.getElementById('confirmNoBtn');
 
-        // Variables globales para Firebase y la aplicación
-        let db;
-        let auth;
-        let appId;
+        // Variables globales para la aplicación
         let purchases = [];
         let currentFilter = 'all';
-        let isAuthReady = false; // Nueva variable de estado
+
+        // =========================================================================
+        // === Funciones de la Interfaz de Usuario (UI) ===
+        // =========================================================================
         
         /**
          * Muestra un mensaje de estado en la parte superior del formulario.
          * @param {string} message - El mensaje a mostrar.
          * @param {string} type - El tipo de mensaje ('success', 'info', 'error').
          */
-        // REGLA: Mover las declaraciones de funciones antes de cualquier uso.
         const showStatusMessage = (message, type) => {
             statusMessage.textContent = message;
             statusMessage.classList.remove('hidden', 'bg-green-600', 'bg-blue-600', 'bg-red-600');
@@ -188,100 +237,35 @@
         };
         
         /**
-         * Habilita los elementos de la interfaz de usuario una vez que Firebase está listo.
+         * Muestra un modal de confirmación.
+         * @param {string} title - Título del modal.
+         * @param {string} message - Mensaje del modal.
+         * @returns {Promise<boolean>} Una promesa que se resuelve a `true` si el usuario confirma, `false` en caso contrario.
          */
-        // REGLA: Mover las declaraciones de funciones antes de cualquier uso.
-        const enableUI = () => {
-            const formInputs = purchaseForm.querySelectorAll('input, button');
-            formInputs.forEach(input => {
-                input.disabled = false;
+        const showConfirmModal = (title, message) => {
+            return new Promise(resolve => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                confirmModal.classList.remove('hidden');
+
+                const handleYes = () => {
+                    confirmModal.classList.add('hidden');
+                    confirmYesBtn.removeEventListener('click', handleYes);
+                    confirmNoBtn.removeEventListener('click', handleNo);
+                    resolve(true);
+                };
+
+                const handleNo = () => {
+                    confirmModal.classList.add('hidden');
+                    confirmYesBtn.removeEventListener('click', handleYes);
+                    confirmNoBtn.removeEventListener('click', handleNo);
+                    resolve(false);
+                };
+
+                confirmYesBtn.addEventListener('click', handleYes);
+                confirmNoBtn.addEventListener('click', handleNo);
             });
-            submitBtn.classList.remove('bg-blue-400', 'cursor-not-allowed');
-            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'transform', 'hover:scale-105');
-            
-            filterButtons.forEach(btn => btn.disabled = false);
-            generateReportBtn.disabled = false;
         };
-
-        // --- Configuración e Inicialización de Firebase ---
-        console.log("1. Inicializando Firebase...");
-        try {
-            // Verificar si la configuración de Firebase está disponible y es válida
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            if (!firebaseConfig.projectId) {
-                console.error("Error: 'projectId' no se encontró en la configuración de Firebase.");
-                showStatusMessage('Error al iniciar la aplicación. Configuración de Firebase faltante o incompleta.', 'error');
-                loadingMessage.classList.add('hidden');
-                throw new Error("'projectId' not provided in firebase.initializeApp.");
-            }
-            
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            console.log("2. Firebase inicializado con éxito.");
-        } catch (e) {
-            console.error("Error al inicializar Firebase:", e);
-            showStatusMessage('Error al iniciar la aplicación. Revisa la consola.', 'error');
-            loadingMessage.classList.add('hidden');
-        }
-
-        // Autentica al usuario en el entorno
-        onAuthStateChanged(auth, async (user) => {
-            console.log("3. Estado de autenticación cambiado. Usuario actual:", user ? user.uid : "null");
-            if (user) {
-                // El usuario está autenticado, ahora podemos usar Firestore y habilitar la UI
-                isAuthReady = true;
-                userIdDisplay.textContent = user.uid;
-                userIdContainer.classList.remove('hidden');
-                loadingMessage.classList.add('hidden'); // Oculta el mensaje de carga cuando el usuario se autentica
-                showStatusMessage('Conexión exitosa a la base de datos.', 'success');
-                console.log("4. Usuario autenticado con éxito. Habilitando la interfaz de usuario...");
-                
-                // Habilita todos los campos del formulario y botones
-                enableUI();
-
-                // Escucha los cambios en la colección 'purchases' en tiempo real
-                try {
-                    console.log("5. Configurandando listener de Firestore en la ruta:", `artifacts/${appId}/public/data/purchases`);
-                    const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
-                    onSnapshot(purchaseCollection, (snapshot) => {
-                        console.log("6. Datos de Firestore recibidos.");
-                        purchases = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        renderPurchases();
-                    }, (error) => {
-                        console.error("Error al escuchar los cambios en Firestore:", error);
-                        showStatusMessage('Error al cargar los datos. Revisa tu conexión.', 'error');
-                    });
-                } catch (e) {
-                    console.error("Error al configurar el listener de Firestore:", e);
-                    showStatusMessage('Error al cargar los datos. Revisa la consola.', 'error');
-                }
-
-            } else {
-                // Si no hay un token, se autentica de forma anónima
-                try {
-                    console.log("7. No hay usuario. Intentando autenticación...");
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        console.log("8. Autenticando con token personalizado...");
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        console.log("8. Autenticando de forma anónima...");
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("9. Error al autenticar:", error);
-                    showStatusMessage('Error de autenticación.', 'error');
-                    loadingMessage.classList.add('hidden');
-                }
-            }
-        });
-
-
-        // --- Funciones para manejar las compras ---
 
         /**
          * Renderiza la tabla de compras en la interfaz de usuario.
@@ -334,7 +318,7 @@
                 if (closingDate < today && purchase.status !== 'completed') {
                     closingDateClass = 'text-red-500 font-bold';
                 }
-
+                
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${purchase.itemName || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${purchase.amount ? purchase.amount.toFixed(2) : '0.00'}</td>
@@ -367,25 +351,69 @@
                         </button>
                     </td>
                 `;
-
                 purchaseList.appendChild(row);
             });
         };
         
+        // =========================================================================
+        // === Funciones de la Lógica de la Aplicación ===
+        // =========================================================================
 
         /**
-         * Maneja el envío del formulario de manera asíncrona
+         * Inicializa Firebase y escucha los cambios en la base de datos.
          */
-        async function handleFormSubmit(e) {
-            e.preventDefault(); // Evita que la página se recargue
+        const initFirebase = async () => {
+            try {
+                if (!YOUR_FIREBASE_CONFIG.projectId) {
+                    showStatusMessage('Error: "projectId" no se encontró en la configuración de Firebase. Por favor, agregue su configuración.', 'error');
+                    console.error("Error: 'projectId' not provided in your firebase config.");
+                    return;
+                }
+                const app = initializeApp(YOUR_FIREBASE_CONFIG);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Inicia sesión de forma anónima
+                await signInAnonymously(auth);
+                
+                // Escucha los cambios en el estado de autenticación
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = userId;
+                        showStatusMessage('Conectado a la base de datos de forma exitosa.', 'success');
+                        
+                        // Escucha los cambios en la colección de compras
+                        onSnapshot(collection(db, `artifacts/${appId}/public/data/purchases`), (snapshot) => {
+                            purchases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            renderPurchases();
+                        });
+                        
+                    } else {
+                        // El usuario no está autenticado, muestra un mensaje.
+                        showStatusMessage('Error de autenticación. Por favor, revisa la configuración.', 'error');
+                        userIdDisplay.textContent = 'No autenticado';
+                        console.error('User is not authenticated.');
+                    }
+                });
+            } catch (error) {
+                showStatusMessage('Error al inicializar Firebase: ' + error.message, 'error');
+                console.error("Error al inicializar Firebase:", error);
+            }
+        };
 
-            // Valida que Firebase esté listo antes de continuar
-            if (!isAuthReady) {
-                showStatusMessage('La aplicación no está lista. Por favor, espera.', 'error');
+        /**
+         * Maneja el envío del formulario para agregar o actualizar una compra.
+         */
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            
+            // Verifica que la conexión a Firebase esté establecida
+            if (!db || !userId) {
+                showStatusMessage('Error: La aplicación no está conectada a la base de datos. Por favor, refresca la página.', 'error');
                 return;
             }
 
-            // Obtiene los valores del formulario
             const id = purchaseIdInput.value;
             const itemName = itemNameInput.value.trim();
             const amount = parseFloat(amountInput.value);
@@ -400,13 +428,11 @@
             const paymentStatus = paymentStatusInput.value.trim();
             const notes = notesInput.value.trim();
 
-            // Valida que los campos requeridos no estén vacíos
             if (!itemName || isNaN(amount) || !publicationDate || !closingDate) {
                 showStatusMessage('Por favor, completa todos los campos requeridos.', 'error');
                 return;
             }
 
-            // Objeto de datos a guardar en Firestore
             const purchaseData = {
                 itemName,
                 amount,
@@ -420,37 +446,34 @@
                 receptionDate,
                 paymentStatus,
                 notes,
-                status: 'in_progress', // Estado inicial
-                createdAt: Date.now() // Marca de tiempo de creación
+                status: 'in_progress',
             };
             
             try {
-                console.log("10. Guardando datos en Firestore...");
-                const purchaseCollection = collection(db, `artifacts/${appId}/public/data/purchases`);
                 if (id) {
                     // Actualiza una compra existente
-                    const purchaseDocRef = doc(db, `artifacts/${appId}/public/data/purchases`, id);
-                    await updateDoc(purchaseDocRef, purchaseData);
+                    const docRef = doc(db, `artifacts/${appId}/public/data/purchases`, id);
+                    await updateDoc(docRef, purchaseData);
                     showStatusMessage('Solicitud actualizada correctamente.', 'success');
-                    submitBtn.textContent = 'Agregar Solicitud'; // Vuelve a modo de adición
-                    purchaseIdInput.value = '';
                 } else {
-                    // Crea una nueva compra
-                    await addDoc(purchaseCollection, purchaseData);
+                    // Agrega una nueva compra
+                    const docRef = await addDoc(collection(db, `artifacts/${appId}/public/data/purchases`), {
+                        ...purchaseData,
+                        createdAt: new Date().toISOString(),
+                    });
                     showStatusMessage('Solicitud agregada correctamente.', 'success');
                 }
-            } catch (e) {
-                console.error("11. Error al guardar en Firestore: ", e);
-                showStatusMessage('Error al guardar la solicitud. Inténtalo de nuevo.', 'error');
+                
+                // Limpia el formulario
+                purchaseForm.reset();
+                purchaseIdInput.value = '';
+                submitBtn.textContent = 'Agregar Solicitud';
+            } catch (error) {
+                showStatusMessage('Error al guardar la solicitud: ' + error.message, 'error');
+                console.error("Error al guardar la solicitud:", error);
             }
-            
-            // Limpia el formulario
-            purchaseForm.reset();
-        }
+        };
 
-        /**
-         * Maneja el envío del formulario para agregar o actualizar una compra en Firestore.
-         */
         purchaseForm.addEventListener('submit', handleFormSubmit);
 
         /**
@@ -458,11 +481,7 @@
          */
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
-                if (!isAuthReady) return; // Validación de estado
-                // Actualiza el filtro actual
                 currentFilter = button.dataset.filter;
-
-                // Actualiza las clases de los botones para reflejar el filtro activo
                 filterButtons.forEach(btn => {
                     if (btn.dataset.filter === currentFilter) {
                         btn.classList.add('bg-blue-600', 'text-white');
@@ -472,8 +491,6 @@
                         btn.classList.add('bg-gray-200', 'text-gray-800');
                     }
                 });
-
-                // Renderiza la tabla con el nuevo filtro
                 renderPurchases();
             });
         });
@@ -483,12 +500,11 @@
          * Usa delegación de eventos.
          */
         purchaseList.addEventListener('click', async (e) => {
-            if (!isAuthReady) return; // Validación de estado
+            const id = e.target.dataset.id;
+            
             if (e.target.classList.contains('edit-btn')) {
-                const purchaseId = e.target.dataset.id;
-                const purchaseToEdit = purchases.find(p => p.id === purchaseId);
+                const purchaseToEdit = purchases.find(p => p.id === id);
                 if (purchaseToEdit) {
-                    // Carga los datos de la compra en el formulario para editar
                     purchaseIdInput.value = purchaseToEdit.id;
                     itemNameInput.value = purchaseToEdit.itemName || '';
                     amountInput.value = purchaseToEdit.amount || '';
@@ -502,40 +518,36 @@
                     receptionDateInput.value = purchaseToEdit.receptionDate || '';
                     paymentStatusInput.value = purchaseToEdit.paymentStatus || '';
                     notesInput.value = purchaseToEdit.notes || '';
-                    
-                    // Cambia el texto del botón para indicar que es una actualización
                     submitBtn.textContent = 'Actualizar Solicitud';
                     showStatusMessage(`Ahora estás editando la solicitud: ${purchaseToEdit.itemName}.`, 'info');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             } else if (e.target.classList.contains('delete-btn')) {
-                const purchaseId = e.target.dataset.id;
-                try {
-                    console.log("12. Eliminando documento con ID:", purchaseId);
-                    // Elimina el documento de Firestore
-                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId));
-                    showStatusMessage('Solicitud eliminada correctamente.', 'success');
-                } catch (e) {
-                    console.error("13. Error al eliminar el documento: ", e);
-                    showStatusMessage('Error al eliminar la solicitud. Inténtalo de nuevo.', 'error');
+                const confirmed = await showConfirmModal('Confirmar Eliminación', '¿Estás seguro de que quieres eliminar esta solicitud?');
+                if (confirmed) {
+                    try {
+                        const docRef = doc(db, `artifacts/${appId}/public/data/purchases`, id);
+                        await deleteDoc(docRef);
+                        showStatusMessage('Solicitud eliminada correctamente.', 'success');
+                    } catch (error) {
+                        showStatusMessage('Error al eliminar la solicitud: ' + error.message, 'error');
+                        console.error("Error al eliminar la solicitud:", error);
+                    }
                 }
             }
         });
 
         purchaseList.addEventListener('change', async (e) => {
-            if (!isAuthReady) return; // Validación de estado
             if (e.target.classList.contains('status-select')) {
-                const purchaseId = e.target.dataset.id;
+                const id = e.target.dataset.id;
                 const newStatus = e.target.value;
-
                 try {
-                    console.log(`14. Actualizando estado del documento ${purchaseId} a: ${newStatus}`);
-                    // Actualiza el estado en Firestore
-                    const purchaseDocRef = doc(db, `artifacts/${appId}/public/data/purchases`, purchaseId);
-                    await updateDoc(purchaseDocRef, { status: newStatus });
-                } catch (e) {
-                    console.error("15. Error al actualizar el estado: ", e);
-                    showStatusMessage('Error al actualizar el estado. Inténtalo de nuevo.', 'error');
+                    const docRef = doc(db, `artifacts/${appId}/public/data/purchases`, id);
+                    await updateDoc(docRef, { status: newStatus });
+                    showStatusMessage('Estado actualizado correctamente.', 'success');
+                } catch (error) {
+                    showStatusMessage('Error al actualizar el estado: ' + error.message, 'error');
+                    console.error("Error al actualizar el estado:", error);
                 }
             }
         });
@@ -544,15 +556,12 @@
          * Genera y descarga un archivo CSV con las solicitudes atrasadas.
          */
         generateReportBtn.addEventListener('click', () => {
-            if (!isAuthReady) return; // Validación de estado
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Filtra las compras con atrasos
             const delayedPurchases = purchases.filter(purchase => {
                 const deliveryDate = new Date(purchase.deliveryDate);
                 const receptionDate = new Date(purchase.receptionDate);
-                // Si hay fecha de entrega y recepción, y la recepción es posterior a la entrega
                 return purchase.deliveryDate && purchase.receptionDate && receptionDate > deliveryDate;
             });
 
@@ -561,53 +570,34 @@
                 return;
             }
 
-            // Define el encabezado del archivo CSV
             const headers = [
-                "Solicitud",
-                "Monto",
-                "Fecha de Cierre",
-                "Numero de OC",
-                "Proveedor",
-                "Fecha Envio OC",
-                "Fecha Aceptacion",
-                "Fecha Entrega",
-                "Fecha Recepcion",
-                "Dias de Atraso",
-                "Estado de Pago",
-                "Notas"
+                "Solicitud", "Monto", "Fecha de Cierre", "Numero de OC", "Proveedor",
+                "Fecha Envio OC", "Fecha Aceptacion", "Fecha Entrega", "Fecha Recepcion",
+                "Dias de Atraso", "Estado de Pago", "Notas"
             ];
-
-            // Mapea los datos de las compras a un formato de filas CSV
             const csvRows = delayedPurchases.map(purchase => {
                 const deliveryDate = new Date(purchase.deliveryDate);
                 const receptionDate = new Date(purchase.receptionDate);
                 const timeDiff = receptionDate.getTime() - deliveryDate.getTime();
                 const delayDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
                 return [
-                    `"${purchase.itemName.replace(/"/g, '""')}"`,
-                    purchase.amount,
-                    purchase.closingDate,
-                    `"${purchase.ocNumber.replace(/"/g, '""')}"`,
-                    `"${purchase.vendor.replace(/"/g, '""')}"`,
-                    purchase.sentDate,
-                    purchase.acceptanceDate,
-                    purchase.deliveryDate,
-                    purchase.receptionDate,
-                    delayDays,
-                    `"${purchase.paymentStatus.replace(/"/g, '""')}"`,
-                    `"${purchase.notes.replace(/"/g, '""')}"`
+                    `"${(purchase.itemName || '').replace(/"/g, '""')}"`,
+                    purchase.amount || '',
+                    purchase.closingDate || '',
+                    `"${(purchase.ocNumber || '').replace(/"/g, '""')}"`,
+                    `"${(purchase.vendor || '').replace(/"/g, '""')}"`,
+                    purchase.sentDate || '',
+                    purchase.acceptanceDate || '',
+                    purchase.deliveryDate || '',
+                    purchase.receptionDate || '',
+                    delayDays || '',
+                    `"${(purchase.paymentStatus || '').replace(/"/g, '""')}"`,
+                    `"${(purchase.notes || '').replace(/"/g, '""')}"`
                 ].join(',');
             });
-
-            // Une el encabezado y las filas en una sola cadena CSV
             const csvContent = [headers.join(','), ...csvRows].join('\n');
-
-            // Crea un Blob (objeto de archivo) a partir de la cadena CSV
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-
-            // Crea un enlace temporal y simula un clic para descargar el archivo
             const link = document.createElement('a');
             link.setAttribute('href', url);
             link.setAttribute('download', 'reporte_atrasos.csv');
@@ -615,9 +605,11 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
             showStatusMessage('Reporte de atrasos generado y descargado.', 'success');
         });
+        
+        // Carga la aplicación al iniciar la página
+        window.onload = initFirebase;
     </script>
 </body>
 </html>
